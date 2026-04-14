@@ -36,11 +36,9 @@
     </table>
 
     <h2>Категории</h2>
-    <ul>
         {% for cat in categories %}
             <li><strong>{{ cat.name }}</strong>: {{ cat.description|default:"Нет описания" }}</li>
         {% endfor %}
-    </ul>
 
     <h2>Товары ({{ products.count }} шт.)</h2>
     <div class="row">

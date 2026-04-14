@@ -1,0 +1,36 @@
+<h1>Ваша корзина</h1>
+<table>
+    <tr>
+        <th>Товар</th>
+        <th>Кол-во</th>
+        <th>Цена</th>
+        <th>Итог</th>
+        <th>Действия</th>
+    </tr>
+    {% for item in cart.items.all %}
+    <tr>
+        <td>{{ item.product.name }}</td>
+        <td>
+            <form action="{% url 'catalog:update_cart' item.id %}" method="post">
+                {% csrf_token %}
+                <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
+                <button type="submit">Обновить</button>
+            </form>
+        </td>
+        <td>{{ item.product.price }}</td>
+        <td>{{ item.item_cost }}</td>
+        <td><a href="{% url 'catalog:remove_from_cart' item.id %}">Удалить</a></td>
+    </tr>
+    {% endfor %}
+</table>
+<h3>Общая стоимость: {{ cart.total_cost }}</h3>
+<hr>
+<div style="margin-top: 20px;">
+    <a href="{% url 'catalog:product_list' %}" class="btn-secondary" style="text-decoration: none; padding: 10px; border: 1px solid #ccc; background: #eee; color: black;">
+        ← Продолжить покупки
+    </a>
+    
+    <a href="#" class="btn-primary" style="text-decoration: none; padding: 10px; background: #28a745; color: white; margin-left: 10px;">
+        Оформить заказ (пока недоступно) →
+    </a>
+</div>
