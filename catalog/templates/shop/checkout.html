@@ -1,0 +1,15 @@
+<h1>Оформление заказа</h1>
+<p>Общая сумма: {{ cart.total_cost }} руб.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="address">Адрес доставки:</label><br>
+    <textarea name="address" id="address" required></textarea><br><br>
+    
+    <button type="submit" style="background: green; color: white; padding: 10px;">
+        Подтвердить заказ и получить чек
+    </button>
+</form>
+
+<br>
+<a href="{% url 'catalog:cart_view' %}">Вернуться в корзину</a>

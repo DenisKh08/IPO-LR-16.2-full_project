@@ -3,6 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from .models import Product, Category, Manufacturer, Cart, CartItem
+import openpyxl
+from io import BytesIO
+from django.core.mail import EmailMessage
+from django.conf import settings
 
 def catalog_view(request):
     manufacturers = Manufacturer.objects.all()
@@ -85,3 +89,46 @@ def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     cart_item.delete()
     return redirect('catalog:cart_view')
+
+@login_required
+def checkout(request):
+    cart = get_object_or_404(Cart, user=request.user)
+    
+    if not cart.items.exists():
+        messages.error(request, "Ваша корзина пуста")
+        return redirect('catalog:cart_view')
+
+    if request.method == 'POST':
+        address = request.POST.get('address')
+        
+        #Генерация Excel-чека
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Чек"
+        ws.append(["Товар", "Количество", "Цена", "Сумма"])
+        
+        for item in cart.items.all():
+            ws.append([item.product.name, item.quantity, item.product.price, item.item_cost()])
+        
+        ws.append([])
+        ws.append(["Итого", "", "", cart.total_cost()])
+        ws.append(["Адрес доставки", address])
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        subject = f"Ваш заказ в магазине"
+        body = f"Благодарим за заказ! Чек во вложении. Адрес доставки: {address}"
+        email = EmailMessage(
+            subject, body, settings.EMAIL_HOST_USER, [request.user.email]
+        )
+        email.attach(f'receipt_{cart.id}.xlsx', buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        email.send()
+
+        cart.items.all().delete()
+        
+        messages.success(request, "Заказ оформлен! Чек отправлен на вашу почту.")
+        return redirect('catalog:product_list')
+
+    return render(request, 'shop/checkout.html', {'cart': cart})
