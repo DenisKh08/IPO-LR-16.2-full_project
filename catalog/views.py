@@ -7,6 +7,20 @@ import openpyxl
 from io import BytesIO
 from django.core.mail import EmailMessage
 from django.conf import settings
+from rest_framework import viewsets, permissions
+from .serializers import (
+    ProductSerializer, CategorySerializer, ManufacturerSerializer,
+    CartSerializer, CartItemSerializer
+)
+
+def main(request):
+    return render(request, "main.html")
+
+def shop(request):
+    return render(request, "shop.html")
+
+def about(request):
+    return render(request, "about.html")
 
 def catalog_view(request):
     manufacturers = Manufacturer.objects.all()
@@ -132,3 +146,41 @@ def checkout(request):
         return redirect('catalog:product_list')
 
     return render(request, 'shop/checkout.html', {'cart': cart})
+
+class ManufacturerViewSet(viewsets.ModelViewSet):
+    queryset = Manufacturer.objects.all()
+    serializer_class = ManufacturerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class CartViewSet(viewsets.ModelViewSet):
+    queryset = Cart.objects.all()  # Добавить эту строку
+    serializer_class = CartSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Cart.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CartItemViewSet(viewsets.ModelViewSet):
+    queryset = CartItem.objects.all()  # Добавить эту строку
+    serializer_class = CartItemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return CartItem.objects.filter(cart__user=self.request.user)
