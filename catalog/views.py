@@ -12,9 +12,23 @@ from .serializers import (
     ProductSerializer, CategorySerializer, ManufacturerSerializer,
     CartSerializer, CartItemSerializer
 )
+from django.core.paginator import Paginator
 
 def main(request):
-    return render(request, "main.html")
+    popular_products = Product.objects.all().order_by('-id')[:6]
+    categories = Category.objects.all()
+
+
+    for product in popular_products:
+        if not product.image:
+            product.has_image = False
+        else:
+            product.has_image = True
+    
+    return render(request, 'main.html', {
+        'popular_products': popular_products,
+        'categories': categories,
+    })
 
 def shop(request):
     return render(request, "shop.html")
@@ -23,18 +37,37 @@ def about(request):
     return render(request, "about.html")
 
 def catalog_view(request):
-    manufacturers = Manufacturer.objects.all()
-    categories = Category.objects.all()
     products = Product.objects.all()
-    carts = Cart.objects.select_related('user').prefetch_related('items__product').all()
-
+    categories = Category.objects.all()
+    manufacturers = Manufacturer.objects.all()
+    
+    query = request.GET.get('q', '')
+    cat_id = request.GET.get('category', '')
+    man_id = request.GET.get('manufacturer', '')
+    
+    if query:
+        products = products.filter(
+            Q(name__icontains=query) | 
+            Q(description__icontains=query)
+        )
+    if cat_id:
+        products = products.filter(category_id=cat_id)
+    if man_id:
+        products = products.filter(manufacturer_id=man_id)
+    
+    paginator = Paginator(products, 9)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
     context = {
-        'manufacturers': manufacturers,
+        'products': page_obj,
         'categories': categories,
-        'products': products,
-        'carts': carts,
+        'manufacturers': manufacturers,
+        'current_category': cat_id,
+        'current_manufacturer': man_id,
+        'search_query': query,
     }
-    return render(request, 'test.html', context)
+    return render(request, 'shop/catalog.html', context)
 
 def product_list(request):
     products = Product.objects.all()
@@ -166,7 +199,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class CartViewSet(viewsets.ModelViewSet):
-    queryset = Cart.objects.all()  # Добавить эту строку
+    queryset = Cart.objects.all()
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
     
@@ -178,7 +211,7 @@ class CartViewSet(viewsets.ModelViewSet):
 
 
 class CartItemViewSet(viewsets.ModelViewSet):
-    queryset = CartItem.objects.all()  # Добавить эту строку
+    queryset = CartItem.objects.all() 
     serializer_class = CartItemSerializer
     permission_classes = [permissions.IsAuthenticated]
     
