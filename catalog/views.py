@@ -5,7 +5,7 @@ from django.db.models import Q
 from .models import Product, Category, Manufacturer, Cart, CartItem
 import openpyxl
 from io import BytesIO
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, send_mail
 from django.conf import settings
 from rest_framework import viewsets, permissions, generics
 from .serializers import (
@@ -159,26 +159,31 @@ def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
     
     if request.method == 'POST':
-        # 1. Валидация
         address = request.POST.get('address')
         email_addr = request.POST.get('email')
-        if not address or not email_addr:
-            messages.error(request, "Заполните все поля!")
-            return redirect('catalog:checkout')
 
-        # 2. Обновление остатков БЕЗ писем (чистая работа с БД)
+        # 1. Сначала логика с базой данных (она критически важна)
         for item in cart.items.all():
             product = item.product
             product.stock = max(0, product.stock - item.quantity)
             product.save()
-            
-        # 3. Очистка корзины
         cart.items.all().delete()
-        
-        # 4. Сообщение пользователю
+
+        # 2. Попытка отправить почту "в фоне" (без блокировки редиректа)
+        try:
+            # Используем данные из settings.py
+            send_mail(
+                'Ваш заказ в магазине',
+                f'Спасибо за заказ! Адрес доставки: {address}',
+                settings.DEFAULT_FROM_EMAIL,
+                [email_addr or request.user.email],
+                fail_silently=False, 
+            )
+        except Exception as e:
+            # Если почта не ушла, просто пишем в лог, но не ломаем заказ
+            print(f"Ошибка отправки почты: {e}")
+
         messages.success(request, "Заказ успешно оформлен!")
-        
-        # 5. РЕДИРЕКТ - это самое важное. Мы ушли со страницы POST-запроса.
         return redirect('catalog:product_list')
 
     return render(request, 'shop/checkout.html', {'cart': cart})
