@@ -189,7 +189,7 @@ def checkout(request):
             subject, body, settings.EMAIL_HOST_USER, [request.user.email]
         )
         email.attach(f'receipt_{cart.id}.xlsx', buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        email.send()
+        email.send(fail_silently=True)
         # Цикл для уменьшения количества товаров на складе
         for item in cart.items.all():
             product = item.product
