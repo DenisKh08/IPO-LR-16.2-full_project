@@ -19,6 +19,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from .forms import UserUpdateForm, ProfileUpdateForm
 from .models import Profile
+import threading
 
 
 def main(request):
@@ -144,20 +145,18 @@ def remove_from_cart(request, item_id):
     cart_item.delete()
     return redirect('catalog:cart_view')
 
+def send_email_async(subject, body, to_email, attachment_name, attachment_content):
+    try:
+        email = EmailMessage(subject, body, settings.EMAIL_HOST_USER, [to_email])
+        email.attach(attachment_name, attachment_content, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        # fail_silently=False поможет увидеть ошибку в логах, если она возникнет
+        email.send(fail_silently=False)
+    except Exception as e:
+        print(f"CRITICAL SMTP ERROR: {e}")
+
 @login_required
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
-    
-    if request.method == 'POST':
-        address = request.POST.get('address')
-        email = request.POST.get('email') # Забираем введенный email из форм
-        # Валидация: проверяем, что оба поля заполнены
-        if not address or not email:
-            messages.error(request, "Пожалуйста, заполните все обязательные поля!")
-        # Если у самого юзера почты не было, сохраняем её в его профиль
-        if not request.user.email:
-            request.user.email = email
-            request.user.save()
     
     if not cart.items.exists():
         messages.error(request, "Ваша корзина пуста")
@@ -165,16 +164,24 @@ def checkout(request):
 
     if request.method == 'POST':
         address = request.POST.get('address')
-        
-        #Генерация Excel-чека
+        email_addr = request.POST.get('email')
+
+        if not address or not email_addr:
+            messages.error(request, "Пожалуйста, заполните все обязательные поля!")
+            return render(request, 'shop/checkout.html', {'cart': cart})
+
+        # Обновляем email юзера, если он новый
+        if not request.user.email:
+            request.user.email = email_addr
+            request.user.save()
+
+        # 1. Генерация Excel
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Чек"
         ws.append(["Товар", "Количество", "Цена", "Сумма"])
-        
         for item in cart.items.all():
             ws.append([item.product.name, item.quantity, item.product.price, item.item_cost()])
-        
         ws.append([])
         ws.append(["Итого", "", "", cart.total_cost()])
         ws.append(["Адрес доставки", address])
@@ -182,34 +189,33 @@ def checkout(request):
         buffer = BytesIO()
         wb.save(buffer)
         buffer.seek(0)
+        excel_data = buffer.getvalue()
 
-        subject = f"Ваш заказ в магазине"
-        body = f"Благодарим за заказ! Чек во вложении. Адрес доставки: {address}"
-        email = EmailMessage(
-            subject, body, settings.EMAIL_HOST_USER, [request.user.email]
+        # 2. Фоновая отправка письма (не блокирует основной процесс)
+        thread = threading.Thread(
+            target=send_email_async, 
+            args=(
+                "Ваш заказ в магазине", 
+                f"Благодарим за заказ! Адрес доставки: {address}", 
+                request.user.email, 
+                f'receipt_{cart.id}.xlsx', 
+                excel_data
+            )
         )
-        email.attach(f'receipt_{cart.id}.xlsx', buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        email.send()
-        # Цикл для уменьшения количества товаров на складе
+        thread.start()
+
+        # 3. Обновление остатков на складе
         for item in cart.items.all():
             product = item.product
-            
-            # 1. Проверяем, существует ли у товара поле остатка (замени 'stock' на свое, если оно называется иначе)
             if hasattr(product, 'stock') and product.stock is not None:
-                
-                # 2. Вычитаем количество купленного товара из остатка
-                product.stock -= item.quantity
-                
-                # 3. Страховка: если ушли в минус, принудительно ставим 0
-                if product.stock < 0:
-                    product.stock = 0
-                    
-                # 4. Сохраняем обновленный товар обратно в базу данных
+                product.stock = max(0, product.stock - item.quantity)
                 product.save()
-                cart.items.all().delete()
-                
-                messages.success(request, "Заказ оформлен! Чек отправлен на вашу почту.")
-                return redirect('catalog:product_list')
+
+        # 4. Очистка корзины строго ПОСЛЕ цикла
+        cart.items.all().delete()
+        
+        messages.success(request, "Заказ оформлен! Чек скоро придет на почту.")
+        return redirect('catalog:product_list')
 
     return render(request, 'shop/checkout.html', {'cart': cart})
 
