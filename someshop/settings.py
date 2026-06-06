@@ -136,13 +136,14 @@ LOGIN_URL = 'login'
 
 LOGIN_REDIRECT_URL = '/catalog/'
 
-AIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_USE_TLS = False
 EMAIL_HOST_USER = os.getenv('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_USER')
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 REST_FRAMEWORK = {
