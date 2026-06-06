@@ -164,57 +164,38 @@ def checkout(request):
 
     if request.method == 'POST':
         address = request.POST.get('address')
-        email_addr = request.POST.get('email')
-
-        if not address or not email_addr:
-            messages.error(request, "Пожалуйста, заполните все обязательные поля!")
-            return render(request, 'shop/checkout.html', {'cart': cart})
-
-        # Обновляем email юзера, если он новый
-        if not request.user.email:
-            request.user.email = email_addr
-            request.user.save()
-
-        # 1. Генерация Excel
+        
+        # 1. Сначала ГЕНЕРИРУЕМ данные, чтобы если здесь ошибка, ничего не удалилось
+        buffer = BytesIO()
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "Чек"
         ws.append(["Товар", "Количество", "Цена", "Сумма"])
         for item in cart.items.all():
             ws.append([item.product.name, item.quantity, item.product.price, item.item_cost()])
-        ws.append([])
-        ws.append(["Итого", "", "", cart.total_cost()])
-        ws.append(["Адрес доставки", address])
-
-        buffer = BytesIO()
         wb.save(buffer)
         buffer.seek(0)
-        excel_data = buffer.getvalue()
-
-        # 2. Фоновая отправка письма (не блокирует основной процесс)
-        thread = threading.Thread(
-            target=send_email_async, 
-            args=(
-                "Ваш заказ в магазине", 
-                f"Благодарим за заказ! Адрес доставки: {address}", 
-                request.user.email, 
-                f'receipt_{cart.id}.xlsx', 
-                excel_data
+        
+        # 2. ПОПЫТКА ОТПРАВКИ (синхронно, но с try/except)
+        try:
+            email = EmailMessage(
+                "Ваш заказ", "Спасибо за покупку!", 
+                settings.DEFAULT_FROM_EMAIL, [request.user.email]
             )
-        )
-        thread.start()
-
-        # 3. Обновление остатков на складе
+            email.attach(f'receipt_{cart.id}.xlsx', buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            email.send(fail_silently=False) 
+        except Exception as e:
+            # Если почта не ушла, выводим ошибку в лог, но НЕ ПРЕРЫВАЕМ заказ
+            print(f"ОШИБКА ПОЧТЫ: {e}")
+        
+        # 3. Обновляем остатки и удаляем товары
         for item in cart.items.all():
             product = item.product
-            if hasattr(product, 'stock') and product.stock is not None:
-                product.stock = max(0, product.stock - item.quantity)
-                product.save()
-
-        # 4. Очистка корзины строго ПОСЛЕ цикла
+            product.stock = max(0, product.stock - item.quantity)
+            product.save()
+            
         cart.items.all().delete()
         
-        messages.success(request, "Заказ оформлен! Чек скоро придет на почту.")
+        messages.success(request, "Заказ оформлен!")
         return redirect('catalog:product_list')
 
     return render(request, 'shop/checkout.html', {'cart': cart})
