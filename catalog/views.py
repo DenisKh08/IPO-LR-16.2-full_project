@@ -158,44 +158,27 @@ def send_email_async(subject, body, to_email, attachment_name, attachment_conten
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
     
-    if not cart.items.exists():
-        messages.error(request, "Ваша корзина пуста")
-        return redirect('catalog:cart_view')
-
     if request.method == 'POST':
+        # 1. Валидация
         address = request.POST.get('address')
-        
-        # 1. Сначала ГЕНЕРИРУЕМ данные, чтобы если здесь ошибка, ничего не удалилось
-        buffer = BytesIO()
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.append(["Товар", "Количество", "Цена", "Сумма"])
-        for item in cart.items.all():
-            ws.append([item.product.name, item.quantity, item.product.price, item.item_cost()])
-        wb.save(buffer)
-        buffer.seek(0)
-        
-        # 2. ПОПЫТКА ОТПРАВКИ (синхронно, но с try/except)
-        try:
-            email = EmailMessage(
-                "Ваш заказ", "Спасибо за покупку!", 
-                settings.DEFAULT_FROM_EMAIL, [request.user.email]
-            )
-            email.attach(f'receipt_{cart.id}.xlsx', buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            email.send(fail_silently=False) 
-        except Exception as e:
-            # Если почта не ушла, выводим ошибку в лог, но НЕ ПРЕРЫВАЕМ заказ
-            print(f"ОШИБКА ПОЧТЫ: {e}")
-        
-        # 3. Обновляем остатки и удаляем товары
+        email_addr = request.POST.get('email')
+        if not address or not email_addr:
+            messages.error(request, "Заполните все поля!")
+            return redirect('catalog:checkout')
+
+        # 2. Обновление остатков БЕЗ писем (чистая работа с БД)
         for item in cart.items.all():
             product = item.product
             product.stock = max(0, product.stock - item.quantity)
             product.save()
             
+        # 3. Очистка корзины
         cart.items.all().delete()
         
-        messages.success(request, "Заказ оформлен!")
+        # 4. Сообщение пользователю
+        messages.success(request, "Заказ успешно оформлен!")
+        
+        # 5. РЕДИРЕКТ - это самое важное. Мы ушли со страницы POST-запроса.
         return redirect('catalog:product_list')
 
     return render(request, 'shop/checkout.html', {'cart': cart})
