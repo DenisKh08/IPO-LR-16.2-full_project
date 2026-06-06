@@ -14,11 +14,11 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-            {% if product.image and product.image.url != '/media/products/default.jpg' %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% else %}
-                <img src="{% static 'images/default.jpg' %}" alt="Нет фото" height="400">
-            {% endif %}
+                {% if product.image %}
+                    <img src="/media/{{ product.image }}" class="card-img-top" alt="{{ product.name }}" style="height: 600px; object-fit: contain;">
+                {% else %}
+                    <img src="{% static 'images/default.jpg' %}" class="card-img-top" alt="Нет фото">
+                {% endif %}
     </div>
     
     <div class="col-md-6">
