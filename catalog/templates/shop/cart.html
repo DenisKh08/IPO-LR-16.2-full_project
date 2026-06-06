@@ -1,36 +1,124 @@
-<h1>Ваша корзина</h1>
-<table>
-    <tr>
-        <th>Товар</th>
-        <th>Кол-во</th>
-        <th>Цена</th>
-        <th>Итог</th>
-        <th>Действия</th>
-    </tr>
-    {% for item in cart.items.all %}
-    <tr>
-        <td>{{ item.product.name }}</td>
-        <td>
-            <form action="{% url 'catalog:update_cart' item.id %}" method="post">
-                {% csrf_token %}
-                <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
-                <button type="submit">Обновить</button>
-            </form>
-        </td>
-        <td>{{ item.product.price }}</td>
-        <td>{{ item.item_cost }}</td>
-        <td><a href="{% url 'catalog:remove_from_cart' item.id %}">Удалить</a></td>
-    </tr>
-    {% endfor %}
-</table>
-<h3>Общая стоимость: {{ cart.total_cost }}</h3>
-<hr>
-<div style="margin-top: 20px;">
-    <a href="{% url 'catalog:product_list' %}" class="btn-secondary" style="text-decoration: none; padding: 10px; border: 1px solid #ccc; background: #eee; color: black;">
-        ← Продолжить покупки
-    </a>
+{% extends 'base.html' %}
+{% block title %}Ваша корзина{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-cart3 text-primary me-2"></i>Ваша корзина
+        </h2>
+        <a href="{% url 'catalog:product_list' %}" class="btn btn-outline-secondary btn-sm rounded-3">
+            <i class="bi bi-arrow-left me-1"></i> Продолжить покупки
+        </a>
+    </div>
+
+    {% if cart.items.all %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4 p-3">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-secondary small uppercase">
+                            <tr>
+                                <th scope="col" class="border-0 rounded-start">Товар</th>
+                                <th scope="col" class="border-0 text-center" style="width: 150px;">Кол-во</th>
+                                <th scope="col" class="border-0 text-end">Цена</th>
+                                <th scope="col" class="border-0 text-end">Итог</th>
+                                <th scope="col" class="border-0 text-center rounded-end" style="width: 80px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart.items.all %}
+                            <tr>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-3 p-2 d-none d-sm-block me-3 text-secondary" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-laptop fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">{{ item.product.name }}</h6>
+                                            <small class="text-muted">Код: {{ item.product.id }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="text-center py-3">
+                                    <form action="{% url 'catalog:update_cart' item.id %}" method="post" class="d-flex align-items-center justify-content-center">
+                                        {% csrf_token %}
+                                        <div class="input-group input-group-sm" style="max-width: 110px;">
+                                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" 
+                                                   class="form-control form-control-sm text-center rounded-start-3" 
+                                                   style="border-right: 0;">
+                                            <button type="submit" class="btn btn-primary rounded-end-3 px-2" title="Обновить">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+
+                                <td class="text-end py-3 text-secondary fs-6">
+                                    {{ item.product.price }} <small>руб.</small>
+                                </td>
+
+                                <td class="text-end py-3 fw-bold text-dark fs-6">
+                                    {{ item.item_cost }} <small>руб.</small>
+                                </td>
+
+                                <td class="text-center py-3">
+                                    <a href="{% url 'catalog:remove_from_cart' item.id %}" 
+                                       class="btn btn-outline-danger btn-sm rounded-3 border-0 px-2" 
+                                       title="Удалить товар">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %} </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 p-4 bg-light">
+                <h5 class="fw-bold mb-4 text-dark">Детали заказа</h5>
+                
+                <div class="d-flex justify-content-between mb-3 fs-6 text-secondary">
+                    <span>Количество позиций:</span>
+                    <span class="fw-semibold text-dark">{{ cart.items.count }}</span>
+                </div>
+                
+                <hr class="text-muted my-3">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="fs-5 fw-semibold text-dark">Итого к оплате:</span>
+                    <span class="fs-3 fw-bold text-primary">{{ cart.total_cost }} <small class="fs-5 text-muted">руб.</small></span>
+                </div>
+
+                <a href="/checkout/" class="btn btn-success btn-lg w-100 rounded-3 shadow-sm py-3 fw-bold fs-6 mb-3">
+                    <i class="bi bi-credit-card-2-back-fill me-2"></i> Перейти к оформлению
+                </a>
+
+                <div class="text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-fill-check text-success me-1"></i> Безопасное оформление заказа
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
     
-    <a href="/checkout/" class="btn-primary" style="text-decoration: none; padding: 10px; background: #28a745; color: white; margin-left: 10px;">
-        Оформить заказ →
-    </a>
-</div>
+    {% else %}
+    <div class="row justify-content-center my-5 py-5">
+        <div class="col-md-6 text-center">
+            <div class="display-1 text-muted mb-4">
+                <i class="bi bi-cart-x"></i>
+            </div>
+            <h3 class="fw-bold text-dark">Ваша корзина пуста</h3>
+            <p class="text-muted mb-4 fs-5">Похоже, вы ещё не добавили ни одного товара в корзину.</p>
+            <a href="{% url 'catalog:product_list' %}" class="btn btn-primary btn-lg rounded-3 px-4 shadow-sm">
+                <i class="bi bi-grid me-2"></i> Перейти в каталог товаров
+            </a>
+        </div>
+    </div>
+    {% endif %} </div>
+{% endblock %}

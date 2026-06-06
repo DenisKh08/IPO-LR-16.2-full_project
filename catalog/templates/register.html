@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Мой Магазин</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .card.shadow {
+            background: #ffffff;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+        }
+        .form-text ul {
+            padding-left: 1.2rem;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'catalog:main' %}">
+                <i class="bi bi-laptop me-2"></i> ОЧЕНЬ КРУТОЙ МАГАЗИН АРТЁМА
+            </a>
+            <a href="{% url 'catalog:main' %}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-house-door-fill"></i> На главную
+            </a>
+        </div>
+    </nav>
+
+    <div class="container my-auto" style="margin-bottom: 40px !important;">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow border-0 rounded-4">
+                    <div class="card-body p-5">
+                        
+                        <div class="text-center mb-4">
+                            <div class="display-4 text-success mb-2">
+                                <i class="bi bi-person-plus-fill"></i>
+                            </div>
+                            <h2 class="fw-bold text-dark">Регистрация</h2>
+                            <p class="text-muted small">Создайте аккаунт, чтобы сохранять корзину и делать заказы</p>
+                        </div>
+
+                        {% if form.errors and not form.non_field_errors %}
+                            <div class="alert alert-danger rounded-3 small" role="alert">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i> Пожалуйста, исправьте ошибки заполнения полей.
+                            </div>
+                        {% endif %}
+
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            {% for field in form %}
+                                <div class="mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold small text-secondary mb-1">
+                                        {{ field.label }}
+                                    </label>
+                                    
+                                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                                           name="{{ field.html_name }}" 
+                                           id="{{ field.id_for_label }}" 
+                                           class="form-control rounded-3 fs-6 {% if field.errors %}is-invalid{% endif %}" 
+                                           placeholder="Укажите {{ field.label|lower }}"
+                                           required>
+                                    
+                                    {% if field.help_text %}
+                                        <div class="form-text">
+                                            {{ field.help_text|safe }}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block small mt-1">
+                                            <i class="bi bi-x-circle-fill me-1"></i> {{ error }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+
+                            <button type="submit" class="btn btn-success btn-lg w-100 rounded-3 mt-4 shadow-sm">
+                                <i class="bi bi-check-circle-fill me-2"></i> Создать аккаунт
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <p class="mb-0 text-muted small">Уже зарегистрированы? 
+                                <a href="{% url 'catalog:login' %}" class="text-success fw-bold text-decoration-none">Войти в систему</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white-50 text-center py-3">
+        <div class="container small">
+            &copy; 2026 Мой Магазин. Все права защищены.
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

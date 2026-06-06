@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Product, Category, Manufacturer, Cart, CartItem
+from .models import Product, Category, Manufacturer, Cart, CartItem, Profile, Order, OrderItem
 
 
 class ManufacturerSerializer(serializers.ModelSerializer):
@@ -118,3 +118,30 @@ class ProductBriefSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'price', 'stock', 'image']
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'username', 'email', 'role', 'full_name', 'phone', 'address']
+        # Роль лучше сделать только для чтения, чтобы покупатель не прислал PATCH и не стал админом
+        read_only_fields = ['id', 'role']
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product_name', 'price', 'quantity']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True, source='orderitem_set') # или related_name, если настраивали
+
+    class Meta:
+        model = Order
+        fields = ['id', 'created_at', 'status', 'address', 'items']

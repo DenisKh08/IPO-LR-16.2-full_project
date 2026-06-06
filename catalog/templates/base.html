@@ -17,7 +17,7 @@
         <div class="container">
             <a class="navbar-brand" href="{% url 'catalog:main' %}">
                 <img src="{% static 'images/logo.png' %}" alt="Логотип" height="60" class="me-2">
-                <- (лого) ОЧЕНЬ КРУТОЙ МАГАЗИН АРТЁМА
+                 ОЧЕНЬ КРУТОЙ МАГАЗИН АРТЁМА
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -41,10 +41,16 @@
                 </ul>
                 <div class="d-flex">
                     {% if user.is_authenticated %}
-                        <span class="navbar-text me-3">Привет, {{ user.username }}!</span>
+                        <a href="{% url 'catalog:profile_page' %}" class="btn btn-outline-info btn-sm me-2">
+                            <i class="bi bi-person-fill"></i> {{ user.username }}
+                        </a>
+                        <a href="{% url 'catalog:cart_view' %}" class="btn btn-outline-warning btn-sm me-2">
+                            <i class="bi bi-cart4"></i> Корзина
+                        </a>
+                        <a href="{% url 'catalog:logout' %}" class="btn btn-danger btn-sm">Выйти</a>
                     {% else %}
-                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm me-2">Войти</a>
-                        <a href="{% url 'register' %}" class="btn btn-light btn-sm">Регистрация</a>
+                        <a href="{% url 'catalog:login' %}" class="btn btn-outline-light btn-sm me-2">Войти</a>
+                        <a href="{% url 'catalog:register' %}" class="btn btn-light btn-sm">Регистрация</a>
                     {% endif %}
                 </div>
             </div>

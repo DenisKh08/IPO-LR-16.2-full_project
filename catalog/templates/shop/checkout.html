@@ -1,15 +1,85 @@
-<h1>Оформление заказа</h1>
-<p>Общая сумма: {{ cart.total_cost }} руб.</p>
+{% extends 'base.html' %}
+{% block title %}Оформление заказа{% endblock %}
 
-<form method="post">
-    {% csrf_token %}
-    <label for="address">Адрес доставки:</label><br>
-    <textarea name="address" id="address" required></textarea><br><br>
-    
-    <button type="submit" style="background: green; color: white; padding: 10px;">
-        Подтвердить заказ и получить чек
-    </button>
-</form>
+{% block content %}
+<div class="container my-5" style="max-width: 900px;">
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-credit-card-2-back text-success me-2"></i>Оформление заказа
+        </h2>
+    </div>
 
-<br>
-<a href="{% url 'catalog:cart_view' %}">Вернуться в корзину</a>
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0 rounded-4 p-4">
+                <h5 class="fw-bold mb-4 text-dark">Контактные данные и доставка</h5>
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label small fw-semibold text-secondary">
+                            Ваш Email адрес <span class="text-danger">*</span>
+                        </label>
+                        <input type="email" name="email" id="email" 
+                               class="form-control rounded-3 fs-6" 
+                               value="{{ request.user.email|default:'' }}" 
+                               placeholder="example@mail.com" 
+                               required>
+                        <div class="form-text text-muted" style="font-size: 0.75rem;">
+                            На эту почту мы отправим электронный чек заказа.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="address" class="form-label small fw-semibold text-secondary">
+                            Полный адрес доставки <span class="text-danger">*</span>
+                        </label>
+                        <textarea name="address" id="address" rows="3" 
+                                  class="form-control rounded-3 fs-6" 
+                                  placeholder="Укажите город, улицу, дом и квартиру..." 
+                                  required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-lg w-100 rounded-3 shadow-sm py-3 fw-bold fs-6">
+                        <i class="bi bi-check2-circle me-2"></i> Подтвердить заказ и получить чек
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0 rounded-4 p-4 bg-light h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold mb-4 text-dark">Итог заказа</h5>
+                    
+                    <div class="d-flex justify-content-between mb-3 fs-6 text-secondary">
+                        <span>Способ оплаты:</span>
+                        <span class="fw-semibold text-dark">При получении</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3 fs-6 text-secondary">
+                        <span>Доставка:</span>
+                        <span class="text-success fw-semibold">Бесплатно</span>
+                    </div>
+                    
+                    <hr class="text-muted my-3">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-6 fw-semibold text-dark">К оплате:</span>
+                        <span class="fs-3 fw-bold text-success">
+                            {{ cart.total_cost }} <small class="fs-6 text-muted">руб.</small>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top text-center">
+                    <a href="{% url 'catalog:cart_view' %}" class="text-decoration-none text-muted small fw-semibold">
+                        <i class="bi bi-arrow-left me-1"></i> Вернуться в корзину
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
