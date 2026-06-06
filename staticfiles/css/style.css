@@ -1,0 +1,55 @@
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #000000 0%, #000000 100%);
+    color: white;
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.breadcrumb {
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+.product-image {
+    max-height: 400px;
+    width: 100%;
+    object-fit: contain;
+}
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.alert-info {
+    background-color: #ed5858a6;
+}
