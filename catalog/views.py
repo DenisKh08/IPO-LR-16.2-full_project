@@ -5,7 +5,7 @@ from django.db.models import Q
 from .models import Product, Category, Manufacturer, Cart, CartItem
 import openpyxl
 from io import BytesIO
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMessage
 from django.conf import settings
 from rest_framework import viewsets, permissions, generics
 from .serializers import (
@@ -19,7 +19,6 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from .forms import UserUpdateForm, ProfileUpdateForm
 from .models import Profile
-import threading
 
 
 def main(request):
@@ -145,46 +144,72 @@ def remove_from_cart(request, item_id):
     cart_item.delete()
     return redirect('catalog:cart_view')
 
-def send_email_async(subject, body, to_email, attachment_name, attachment_content):
-    try:
-        email = EmailMessage(subject, body, settings.EMAIL_HOST_USER, [to_email])
-        email.attach(attachment_name, attachment_content, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        # fail_silently=False поможет увидеть ошибку в логах, если она возникнет
-        email.send(fail_silently=False)
-    except Exception as e:
-        print(f"CRITICAL SMTP ERROR: {e}")
-
 @login_required
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
     
     if request.method == 'POST':
         address = request.POST.get('address')
-        email_addr = request.POST.get('email')
+        email = request.POST.get('email') # Забираем введенный email из форм
+        # Валидация: проверяем, что оба поля заполнены
+        if not address or not email:
+            messages.error(request, "Пожалуйста, заполните все обязательные поля!")
+        # Если у самого юзера почты не было, сохраняем её в его профиль
+        if not request.user.email:
+            request.user.email = email
+            request.user.save()
+    
+    if not cart.items.exists():
+        messages.error(request, "Ваша корзина пуста")
+        return redirect('catalog:cart_view')
 
-        # 1. Сначала логика с базой данных (она критически важна)
+    if request.method == 'POST':
+        address = request.POST.get('address')
+        
+        #Генерация Excel-чека
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Чек"
+        ws.append(["Товар", "Количество", "Цена", "Сумма"])
+        
+        for item in cart.items.all():
+            ws.append([item.product.name, item.quantity, item.product.price, item.item_cost()])
+        
+        ws.append([])
+        ws.append(["Итого", "", "", cart.total_cost()])
+        ws.append(["Адрес доставки", address])
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        subject = f"Ваш заказ в магазине"
+        body = f"Благодарим за заказ! Чек во вложении. Адрес доставки: {address}"
+        email = EmailMessage(
+            subject, body, settings.EMAIL_HOST_USER, [request.user.email]
+        )
+        email.attach(f'receipt_{cart.id}.xlsx', buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        email.send()
+        # Цикл для уменьшения количества товаров на складе
         for item in cart.items.all():
             product = item.product
-            product.stock = max(0, product.stock - item.quantity)
-            product.save()
-        cart.items.all().delete()
-
-        # 2. Попытка отправить почту "в фоне" (без блокировки редиректа)
-        try:
-            # Используем данные из settings.py
-            send_mail(
-                'Ваш заказ в магазине',
-                f'Спасибо за заказ! Адрес доставки: {address}',
-                settings.DEFAULT_FROM_EMAIL,
-                [email_addr or request.user.email],
-                fail_silently=False, 
-            )
-        except Exception as e:
-            # Если почта не ушла, просто пишем в лог, но не ломаем заказ
-            print(f"Ошибка отправки почты: {e}")
-
-        messages.success(request, "Заказ успешно оформлен!")
-        return redirect('catalog:product_list')
+            
+            # 1. Проверяем, существует ли у товара поле остатка (замени 'stock' на свое, если оно называется иначе)
+            if hasattr(product, 'stock') and product.stock is not None:
+                
+                # 2. Вычитаем количество купленного товара из остатка
+                product.stock -= item.quantity
+                
+                # 3. Страховка: если ушли в минус, принудительно ставим 0
+                if product.stock < 0:
+                    product.stock = 0
+                    
+                # 4. Сохраняем обновленный товар обратно в базу данных
+                product.save()
+                cart.items.all().delete()
+                
+                messages.success(request, "Заказ оформлен! Чек отправлен на вашу почту.")
+                return redirect('catalog:product_list')
 
     return render(request, 'shop/checkout.html', {'cart': cart})
 
