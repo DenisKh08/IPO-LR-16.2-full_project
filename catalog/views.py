@@ -154,6 +154,7 @@ def checkout(request):
         # Валидация: проверяем, что оба поля заполнены
         if not address or not email:
             messages.error(request, "Пожалуйста, заполните все обязательные поля!")
+            return redirect('catalog:checkout')
         # Если у самого юзера почты не было, сохраняем её в его профиль
         if not request.user.email:
             request.user.email = email
@@ -183,13 +184,13 @@ def checkout(request):
         wb.save(buffer)
         buffer.seek(0)
 
-        subject = f"Ваш заказ в магазине"
-        body = f"Благодарим за заказ! Чек во вложении. Адрес доставки: {address}"
-        email = EmailMessage(
-            subject, body, settings.EMAIL_HOST_USER, [request.user.email]
-        )
-        email.attach(f'receipt_{cart.id}.xlsx', buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        email.send()
+       # subject = f"Ваш заказ в магазине"
+       # body = f"Благодарим за заказ! Чек во вложении. Адрес доставки: {address}"
+       # email = EmailMessage(
+       #     subject, body, settings.EMAIL_HOST_USER, [request.user.email]
+       # )
+       # email.attach(f'receipt_{cart.id}.xlsx', buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+       # email.send()
         # Цикл для уменьшения количества товаров на складе
         for item in cart.items.all():
             product = item.product
@@ -209,7 +210,7 @@ def checkout(request):
                 cart.items.all().delete()
                 
                 messages.success(request, "Заказ оформлен! Чек отправлен на вашу почту.")
-                return redirect('catalog:product_list')
+                return redirect('catalog:cart_view')
 
     return render(request, 'shop/checkout.html', {'cart': cart})
 
