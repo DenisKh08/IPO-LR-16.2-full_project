@@ -323,7 +323,6 @@ def settings_page(request):
         if 'update_profile' in request.POST:
             u_form = UserUpdateForm(request.POST, instance=request.user)
             p_form = ProfileUpdateForm(request.POST, instance=profile)
-            p_form.fields['favorite_category'].queryset = Category.objects.all()
             
             if u_form.is_valid() and p_form.is_valid():
                 u_form.save()

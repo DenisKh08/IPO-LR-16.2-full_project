@@ -25,8 +25,6 @@
             <div class="card h-100 shadow-sm">
             {% if product.image and product.image.url != '/media/products/default.jpg' %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% else %}
-                <img src="{% static 'images/default.jpg' %}" alt="Нет фото" height="400">
             {% endif %}
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ product.name }}</h5>
