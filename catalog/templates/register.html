@@ -4,98 +4,229 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация - DigitalShop</title>
+    <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://jsdelivr.net">
+    <!-- Google Fonts: Inter -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    
     <style>
+        :root {
+            --primary-indigo: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-gradient: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            --slate-900: #0f172a;
+        }
+
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            color: #334155;
         }
-        .card.shadow {
+
+        /* Навигационная панель */
+        .navbar-custom {
+            background-color: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand-custom {
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            font-size: 1.25rem;
+        }
+
+        /* Современная Bento-карточка */
+        .auth-card {
             background: #ffffff;
-            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 24px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02) !important;
         }
-        .form-text ul {
-            padding-left: 1.2rem;
-            margin-top: 0.25rem;
-            font-size: 0.75rem;
-            color: #6c757d;
+
+        /* Стилизация блока заголовка */
+        .icon-box {
+            width: 64px;
+            height: 64px;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary-indigo);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+
+        /* Поля ввода формы */
+        .form-control-custom {
+            border: 1.5px solid #cbd5e1;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            border-radius: 12px !important;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--primary-indigo);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            background-color: #fff;
+        }
+
+        /* Подсказки Django (пароли, требования к логину) */
+        .form-text-custom {
+            font-size: 0.8rem;
+            color: #64748b;
+            line-height: 1.4;
+            margin-top: 0.35rem;
+        }
+        
+        .form-text-custom ul {
+            padding-left: 1.1rem;
+            margin-bottom: 0;
+            list-style-type: square;
+        }
+
+        /* Кастомная кнопка отправки */
+        .btn-primary-custom {
+            background-color: var(--primary-indigo);
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 12px !important;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        /* Ссылка авторизации */
+        .login-link {
+            color: var(--primary-indigo);
+            font-weight: 600;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .login-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            transform: scaleX(0);
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: var(--primary-indigo);
+            transform-origin: bottom right;
+            transition: transform 0.25s ease-out;
+        }
+
+        .login-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        footer {
+            background-color: var(--slate-900);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-5">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'catalog:main' %}">
-                <i class="bi bi-laptop me-2"></i> DigitalShop
+            <a class="navbar-brand navbar-brand-custom text-white d-flex align-items-center" href="{% url 'catalog:main' %}">
+                <i class="bi bi-laptop me-2 text-white"></i> DigitalShop
             </a>
-            <a href="{% url 'catalog:main' %}" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-house-door-fill"></i> На главную
-                <a href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="btn btn-outline-light btn-sm">github</a>
-            </a>
+            <div class="d-flex gap-2">
+                <a href="https://github.com" class="btn btn-link text-white-50 text-decoration-none btn-sm p-1" target="_blank" title="GitHub">
+                    <i class="bi bi-github fs-5"></i>
+                </a>
+                <a href="{% url 'catalog:main' %}" class="btn btn-link text-white-50 text-decoration-none btn-sm d-flex align-items-center gap-1">
+                    <i class="bi bi-house-door"></i> На главную
+                </a>
+            </div>
         </div>
     </nav>
 
-    <div class="container my-auto" style="margin-bottom: 40px !important;">
+    <!-- Основной контент -->
+    <div class="container my-auto py-4">
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow border-0 rounded-4">
-                    <div class="card-body p-5">
+            <div class="col-xl-5 col-lg-6 col-md-8">
+                <div class="card auth-card border-0">
+                    <div class="card-body p-4 p-sm-5">
                         
+                        <!-- Заголовок формы -->
                         <div class="text-center mb-4">
-                            <div class="display-4 text-success mb-2">
-                                <i class="bi bi-person-plus-fill"></i>
+                            <div class="icon-box mb-3">
+                                <i class="bi bi-person-plus"></i>
                             </div>
-                            <h2 class="fw-bold text-dark">Регистрация</h2>
+                            <h3 class="fw-bold text-dark tracking-tight mb-1">Регистрация</h3>
                             <p class="text-muted small">Создайте аккаунт, чтобы сохранять корзину и делать заказы</p>
                         </div>
 
+                        <!-- Ошибки заполнения -->
                         {% if form.errors and not form.non_field_errors %}
-                            <div class="alert alert-danger rounded-3 small" role="alert">
-                                <i class="bi bi-exclamation-circle-fill me-2"></i> Пожалуйста, исправьте ошибки заполнения полей.
+                            <div class="alert alert-danger border-0 rounded-3 small d-flex align-items-center mb-4" role="alert" style="background-color: #fef2f2; color: #991b1b;">
+                                <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+                                <div>Пожалуйста, исправьте ошибки заполнения полей ниже.</div>
                             </div>
                         {% endif %}
 
+                        <!-- Форма -->
                         <form method="post" novalidate>
                             {% csrf_token %}
                             
                             {% for field in form %}
-                                <div class="mb-3">
-                                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold small text-secondary mb-1">
+                                <div class="mb-3.5">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-secondary mb-1">
                                         {{ field.label }}
                                     </label>
                                     
                                     <input type="{{ field.field.widget.input_type|default:'text' }}" 
                                            name="{{ field.html_name }}" 
                                            id="{{ field.id_for_label }}" 
-                                           class="form-control rounded-3 fs-6 {% if field.errors %}is-invalid{% endif %}" 
+                                           class="form-control form-control-custom {% if field.errors %}is-invalid{% endif %}" 
                                            placeholder="Укажите {{ field.label|lower }}"
                                            required>
                                     
+                                    <!-- Текст подсказки Django (например, правила для паролей) -->
                                     {% if field.help_text %}
-                                        <div class="form-text">
+                                        <div class="form-text form-text-custom">
                                             {{ field.help_text|safe }}
                                         </div>
                                     {% endif %}
                                     
+                                    <!-- Ошибки валидации конкретного поля -->
                                     {% for error in field.errors %}
-                                        <div class="invalid-feedback d-block small mt-1">
-                                            <i class="bi bi-x-circle-fill me-1"></i> {{ error }}
+                                        <div class="text-danger d-flex align-items-center gap-1 small mt-1.5 fw-medium">
+                                            <i class="bi bi-x-circle-fill" style="font-size: 0.85rem;"></i> {{ error }}
                                         </div>
                                     {% endfor %}
                                 </div>
                             {% endfor %}
 
-                            <button type="submit" class="btn btn-success btn-lg w-100 rounded-3 mt-4 shadow-sm">
-                                <i class="bi bi-check-circle-fill me-2"></i> Создать аккаунт
+                            <!-- Кнопка создания -->
+                            <button type="submit" class="btn btn-primary-custom btn-lg w-100 mt-4 d-flex align-items-center justify-content-center gap-2">
+                                Создать аккаунт <i class="bi bi-arrow-right-short fs-5"></i>
                             </button>
                         </form>
 
-                        <div class="text-center mt-4">
+                        <!-- Переход на вход -->
+                        <div class="text-center mt-4 pt-2">
                             <p class="mb-0 text-muted small">Уже зарегистрированы? 
-                                <a href="{% url 'catalog:login' %}" class="text-success fw-bold text-decoration-none">Войти в систему</a>
+                                <a href="{% url 'catalog:login' %}" class="login-link">Войти в систему</a>
                             </p>
                         </div>
                     </div>
@@ -104,12 +235,14 @@
         </div>
     </div>
 
-    <footer class="bg-dark text-white-50 text-center py-3">
+    <!-- Футер -->
+    <footer class="text-white-50 text-center py-4 mt-5">
         <div class="container small">
             &copy; 2026 DigitalShop. Все права защищены.
         </div>
     </footer>
 
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

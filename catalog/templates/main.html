@@ -1,44 +1,183 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Главная - Мой Магазин{% endblock %}
+{% block title %}Главная — DigitalShop{% endblock %}
 
 {% block content %}
 
-<div class="hero-section p-5 mb-5 rounded-3 text-center">
-    <h1 class="display-3 fw-bold">Крутой магазин электроники</h1>
-    <p class="lead fs-3">Лучшая техника по доступным ценам</p>
-    <p class="fs-5">Более 5 товаров от ведущих производителей</p>
-    <a href="{% url 'catalog:product_list' %}" class="btn btn-light btn-lg mt-3">
-        <i class="bi bi-grid"></i> Перейти в каталог
-    </a>
+<style>
+    /* Современный Hero-баннер с градиентом */
+    .hero-section-custom {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Декоративное свечение на фоне баннера */
+    .hero-section-custom::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(79, 70, 229, 0.25) 0%, rgba(0,0,0,0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    /* Стилизация карточек товаров */
+    .product-card-custom {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 20px !important;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .product-card-custom:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.08) !important;
+        border-color: #cbd5e1;
+    }
+
+    /* Контейнер для картинок с сохранением пропорций */
+    .product-img-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 75%; /* Пропорции 4:3 */
+        background-color: #f8fafc;
+        overflow: hidden;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .product-img-wrapper img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Картинка не растягивается и не обрезается */
+        padding: 1.25rem;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card-custom:hover .product-img-wrapper img {
+        transform: scale(1.03); /* Легкий зум картинки при наведении */
+    }
+
+    /* Кастомная основная кнопка */
+    .btn-hero {
+        background-color: #4f46e5;
+        color: #ffffff;
+        border: none;
+        font-weight: 600;
+        border-radius: 12px;
+        padding: 0.8rem 1.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-hero:hover {
+        background-color: #4338ca;
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Кастомная кнопка карточки */
+    .btn-card-custom {
+        border: 1.5px solid #e2e8f0;
+        color: #475569;
+        font-weight: 500;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-card-custom:hover {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+        color: #ffffff;
+    }
+</style>
+
+<!-- Hero-секция -->
+<div class="hero-section-custom p-4 p-sm-5 mb-5 text-center text-sm-start">
+    <div class="row align-items-center py-3">
+        <div class="col-lg-7 text-white">
+            <span class="badge mb-3 px-3 py-2 rounded-pill small fw-semibold" style="background: rgba(79, 70, 229, 0.2); color: #a5b4fc;">
+                <i class="bi bi-fire me-1"></i> Официальный дилер
+            </span>
+            <h1 class="display-4 fw-bold tracking-tight mb-2">Мир цифровых возможностей</h1>
+            <p class="text-white-50 fs-5 mb-4">Современная электроника и гаджеты по лучшим ценам с гарантией качества.</p>
+            
+            <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-sm-start text-white-50 small mb-4">
+                <span class="d-flex align-items-center gap-1.5"><i class="bi bi-check-circle text-success"></i> Быстрая доставка</span>
+                <span class="d-flex align-items-center gap-1.5"><i class="bi bi-shield-check text-success"></i> Гарантия 12 месяцев</span>
+            </div>
+
+            <a href="{% url 'catalog:product_list' %}" class="btn btn-hero btn-lg shadow-sm">
+                Открыть каталог <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
 </div>
 
 <!-- Популярные товары -->
 <section class="mb-5">
-    <h2 class="mb-4">
-        Популярные товары
-    </h2>
-    <div class="row">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h3 class="fw-bold text-dark mb-0">Популярные товары</h3>
+        <a href="{% url 'catalog:product_list' %}" class="text-decoration-none small fw-semibold text-primary d-flex align-items-center gap-1">
+            Смотреть все <i class="bi bi-chevron-right fs-7"></i>
+        </a>
+    </div>
+
+    <div class="row g-4">
         {% for product in popular_products %}
-        <div class="col-md-4 col-sm-6 mb-4">
-            <div class="card h-100 shadow-sm">
-            {% if product.image and product.image.url != '/media/products/default.jpg' %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% endif %}
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text fw-bold fs-5 text-primary mt-auto">{{ product.price }} руб.</p>
-                    <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-outline-primary">
-                        Подробнее <i class="bi bi-arrow-right"></i>
-                    </a>
+        <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="card product-card-custom h-100 border-0 shadow-sm">
+                
+                <!-- Контейнер для изображения -->
+                <div class="product-img-wrapper">
+                    {% if product.image and product.image.url != '/media/products/default.jpg' %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    {% else %}
+                        <!-- Плейсхолдер, если картинки нет -->
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted opacity-40">
+                            <i class="bi bi-image fs-1"></i>
+                        </div>
+                    {% endif %}
                 </div>
+
+                <!-- Контент карточки -->
+                <div class="card-body p-4 d-flex flex-column">
+                    <h6 class="card-title text-dark fw-semibold mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.6rem; line-height: 1.3rem;">
+                        {{ product.name }}
+                    </h6>
+                    
+                    <div class="mt-auto pt-3">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="text-muted small">Цена</div>
+                            <div class="fw-bold fs-5 text-dark">{{ product.price }} <span class="fs-6 fw-medium text-secondary">руб.</span></div>
+                        </div>
+                        
+                        <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-card-custom w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                            Посмотреть <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
         {% empty %}
+        <!-- Пустое состояние -->
         <div class="col-12">
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> Пока нет доступных товаров
+            <div class="border rounded-4 p-5 text-center bg-white">
+                <div class="p-3 bg-light rounded-circle d-inline-flex mb-3 text-muted" style="width: 64px; height: 64px; align-items: center; justify-content: center;">
+                    <i class="bi bi-box-seam fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">Пока нет доступных товаров</h5>
+                <p class="text-muted small mb-0">Мы уже работаем над наполнением этой секции новинками.</p>
             </div>
         </div>
         {% endfor %}

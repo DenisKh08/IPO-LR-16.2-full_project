@@ -2,65 +2,230 @@
 {% block title %}Личный кабинет{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow border-0 rounded-4 p-4 text-center">
-                <div class="display-1 text-secondary mb-3">
-                    <i class="bi bi-person-circle"></i>
-                </div>
-                <h3 class="fw-bold">{{ request.user.username }}</h3>
-                <p class="text-muted mb-3">{{ request.user.email|default:"Email не указан" }}</p>
+<!-- Подключаем шрифт Inter для консистентности интерфейса -->
+<link href="https://googleapis.com" rel="stylesheet">
 
+<style>
+    /* Кастомные стили для ЛК в стиле Bento Grid */
+    .profile-container {
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    /* Современные карточки-блокноты */
+    .bento-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 24px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* Мягкий контейнер для аватара */
+    .avatar-box {
+        width: 96px;
+        height: 96px;
+        background: #f1f5f9;
+        color: #64748b;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* Современные бэджи статусов */
+    .badge-admin {
+        background-color: #fef2f2 !important;
+        color: #991b1b !important;
+        border: 1px solid #fca5a5;
+    }
+
+    .badge-user {
+        background-color: #f0fdf4 !important;
+        color: #166534 !important;
+        border: 1px solid #86efac;
+    }
+
+    /* Элементы списка данных профиля */
+    .profile-info-item {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Стилизация интерактивных кнопок */
+    .btn-action {
+        border-radius: 12px !important;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-outline-custom {
+        border: 1.5px solid #cbd5e1;
+        color: #475569;
+    }
+
+    .btn-outline-custom:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+
+    .btn-primary-custom {
+        background-color: #4f46e5;
+        border: none;
+        color: white;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: #4338ca;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    /* Карточки заказов в истории */
+    .order-item-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .order-item-card:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Иконка пустой корзины */
+    .empty-icon-box {
+        width: 80px;
+        height: 80px;
+        background: #f1f5f9;
+        color: #94a3b8;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.25rem;
+        margin: 0 auto;
+    }
+</style>
+
+<div class="container profile-container my-5">
+    <div class="row g-4">
+        
+        <!-- Левая колонка: Профиль пользователя -->
+        <div class="col-lg-4">
+            <div class="card bento-card border-0 p-4 text-center">
+                
+                <!-- Аватар -->
+                <div class="mb-3">
+                    <div class="avatar-box">
+                        <i class="bi bi-person"></i>
+                    </div>
+                </div>
+                
+                <!-- Имя и Email -->
+                <h4 class="fw-bold text-dark mb-1">{{ request.user.username }}</h4>
+                <p class="text-muted small mb-3">{{ request.user.email|default:"Email не указан" }}</p>
+
+                <!-- Статус/Роль -->
                 <div class="mb-4">
                     {% if request.user.is_staff %}
-                        <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill shadow-sm">
-                            <i class="bi bi-shield-lock-fill me-1"></i> Администратор
+                        <span class="badge badge-admin fs-7 px-3 py-2 rounded-pill fw-semibold">
+                            <i class="bi bi-shield-check me-1"></i> Администратор
                         </span>
                     {% else %}
-                        <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill shadow-sm">
-                            <i class="bi bi-person-fill me-1"></i> Покупатель
+                        <span class="badge badge-user fs-7 px-3 py-2 rounded-pill fw-semibold">
+                            <i class="bi bi-bag-heart me-1"></i> Покупатель
                         </span>
                     {% endif %}
                 </div>
 
-                <hr>
-
-                <div class="text-start mt-3 mb-4">
-                    <p class="mb-2">
-                        <strong><i class="bi bi-geo-alt-fill text-danger me-2"></i>Город:</strong> 
-                        <span class="text-secondary">{{ profile.delivery_city|default:"Не указан" }}</span>
-                    </p>
-                    <p class="mb-2">
-                        <strong><i class="bi bi-mailbox text-primary me-2"></i>Индекс:</strong> 
-                        <span class="text-secondary">{{ profile.postal_code|default:"Не указан" }}</span>
-                    </p>
+                <!-- Блок личной информации -->
+                <div class="text-start d-flex flex-column gap-2 mb-4">
+                    <div class="profile-info-item">
+                        <span class="text-muted small fw-medium">
+                            <i class="bi bi-geo-alt text-secondary me-2"></i>Город
+                        </span>
+                        <span class="text-dark small fw-semibold">{{ profile.delivery_city|default:"Не указан" }}</span>
+                    </div>
+                    
+                    <div class="profile-info-item">
+                        <span class="text-muted small fw-medium">
+                            <i class="bi bi-mailbox text-secondary me-2"></i>Индекс
+                        </span>
+                        <span class="text-dark small fw-semibold">{{ profile.postal_code|default:"Не указан" }}</span>
+                    </div>
                 </div>
 
-                <a href="{% url 'catalog:settings_page' %}" class="btn btn-outline-dark w-100 rounded-3">
-                    <i class="bi bi-gear-fill me-2"></i> Настройки аккаунта
+                <!-- Кнопка настроек -->
+                <a href="{% url 'catalog:settings_page' %}" class="btn btn-outline-custom btn-action w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-sliders"></i> Настройки аккаунта
                 </a>
             </div>
         </div>
 
-        <div class="col-md-8">
-            <div class="card shadow border-0 rounded-4 p-4">
-                <h4 class="fw-bold mb-4"><i class="bi bi-bag-check-fill text-success me-2"></i>История заказов</h4>
+        <!-- Правая колонка: История заказов -->
+        <div class="col-lg-8">
+            <div class="card bento-card border-0 p-4 p-sm-5 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h4 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history text-indigo" style="color: #4f46e5;"></i> История заказов
+                    </h4>
+                    {% if orders %}
+                        <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1.5 small fw-medium">
+                            Всего: {{ orders|length }}
+                        </span>
+                    {% endif %}
+                </div>
+                
                 {% if orders %}
-                    {% for order in orders %}
-                        <div class="border rounded-3 p-3 mb-3">
-                            <h5>Заказ №{{ order.id }}</h5>
-                        </div>
-                    {% endfor %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for order in orders %}
+                            <div class="order-item-card d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="p-2.5 bg-white rounded-3 border d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                                        <i class="bi bi-box-seam text-primary fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Заказ №{{ order.id }}</h6>
+                                        <span class="text-muted small">Оформлен</span>
+                                    </div>
+                                </div>
+                                <a href="#" class="btn btn-link text-decoration-none text-muted p-0 fs-5 hover-dark">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% else %}
-                    <div class="text-center py-5">
-                        <i class="bi bi-basket text-muted display-4"></i>
-                        <p class="text-muted mt-3">У вас пока нет оформленных заказов.</p>
-                        <a href="/catalog/" class="btn btn-primary rounded-3">Перейти к покупкам</a>
+                    <!-- Пустое состояние (Empty State) -->
+                    <div class="text-center py-5 my-auto">
+                        <div class="empty-icon-box mb-3">
+                            <i class="bi bi-basket3"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1">Заказов пока нет</h5>
+                        <p class="text-muted small mb-4 mx-auto" style="max-width: 280px;">
+                            Здесь будет отображаться история ваших покупок после оформления заказа.
+                        </p>
+                        <a href="/catalog/" class="btn btn-primary-custom btn-action d-inline-flex align-items-center gap-2">
+                            Перейти к покупкам <i class="bi bi-arrow-right-short fs-5"></i>
+                        </a>
                     </div>
                 {% endif %}
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}

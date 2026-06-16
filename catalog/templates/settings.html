@@ -2,69 +2,201 @@
 {% block title %}Настройки аккаунта{% endblock %}
 
 {% block content %}
-<div class="container my-5" style="max-width: 850px;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0"><i class="bi bi-gear-fill text-secondary me-2"></i>Настройки</h2>
-        <a href="{% url 'catalog:profile_page' %}" class="btn btn-outline-primary btn-sm rounded-3">
-            <i class="bi bi-arrow-left"></i> В личный кабинет
+<!-- Подключаем шрифт Inter -->
+<link href="https://googleapis.com" rel="stylesheet">
+
+<style>
+    .settings-container {
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    /* Bento-карточки */
+    .bento-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 24px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    /* Кастомные поля ввода */
+    .form-control-custom {
+        border: 1.5px solid #cbd5e1;
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+        border-radius: 12px !important;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .form-control-custom:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+        background-color: #fff;
+    }
+
+    /* Кнопки возврата */
+    .btn-outline-custom {
+        border: 1.5px solid #cbd5e1;
+        color: #475569;
+        font-weight: 500;
+        border-radius: 12px !important;
+        padding: 0.5rem 1.1rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-outline-custom:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+
+    /* Кнопки сохранения под формы */
+    .btn-save-primary {
+        background-color: #4f46e5;
+        border: none;
+        color: white;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 12px !important;
+        transition: all 0.2s ease;
+    }
+
+    .btn-save-primary:hover {
+        background-color: #4338ca;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-save-danger {
+        background-color: #ef4444;
+        border: none;
+        color: white;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 12px !important;
+        transition: all 0.2s ease;
+    }
+
+    .btn-save-danger:hover {
+        background-color: #dc2626;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    /* Подсказки Django к паролям */
+    .help-text-custom {
+        font-size: 0.78rem;
+        color: #64748b;
+        line-height: 1.4;
+        margin-top: 0.4rem;
+    }
+
+    .help-text-custom ul {
+        padding-left: 1.1rem;
+        margin-bottom: 0;
+    }
+</style>
+
+<div class="container settings-container my-5" style="max-width: 850px;">
+    
+    <!-- Шапка страницы -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+        <h3 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-sliders" style="color: #4f46e5;"></i> Настройки аккаунта
+        </h3>
+        <a href="{% url 'catalog:profile_page' %}" class="btn btn-outline-custom d-flex align-items-center gap-2 small">
+            <i class="bi bi-arrow-left-short fs-5"></i> В личный кабинет
         </a>
     </div>
 
+    <!-- Системные уведомления -->
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i> {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="alert alert-success alert-dismissible fade show border-0 rounded-3 shadow-sm d-flex align-items-center mb-4" role="alert" style="background-color: #f0fdf4; color: #166534;">
+                <i class="bi bi-check-circle-fill me-2 fs-5"></i> 
+                <div>{{ message }}</div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close" style="font-size: 0.75rem;"></button>
             </div>
         {% endfor %}
     {% endif %}
 
     <div class="row g-4">
+        <!-- Левая форма: Личные данные -->
         <div class="col-md-6">
-            <div class="card shadow border-0 rounded-4 p-4 h-100">
-                <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-person-vcard me-2 text-primary"></i>Личные данные</h5>
+            <div class="card bento-card border-0 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3.5 d-flex align-items-center gap-2">
+                    <i class="bi bi-person-vcard text-muted"></i> Личные данные
+                </h5>
                 <form method="post" novalidate>
                     {% csrf_token %}
                     
+                    <!-- Поля формы Пользователя (User) -->
                     {% for field in u_form %}
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold text-secondary mb-1">{{ field.label }}</label>
-                            <input type="email" name="{{ field.html_name }}" value="{{ field.value|default:'' }}" class="form-control rounded-3 fs-6" required>
+                            <label for="{{ field.id_for_label }}" class="form-label small fw-medium text-secondary mb-1">
+                                {{ field.label }}
+                            </label>
+                            <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                                   name="{{ field.html_name }}" 
+                                   id="{{ field.id_for_label }}"
+                                   value="{{ field.value|default_if_none:'' }}" 
+                                   class="form-control form-control-custom" 
+                                   required>
                         </div>
                     {% endfor %}
 
+                    <!-- Поля формы Профиля (Profile) -->
                     {% for field in p_form %}
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold text-secondary mb-1">{{ field.label }}</label>
-                            <input type="text" name="{{ field.html_name }}" value="{{ field.value|default:'' }}" class="form-control rounded-3 fs-6">
+                            <label for="{{ field.id_for_label }}" class="form-label small fw-medium text-secondary mb-1">
+                                {{ field.label }}
+                            </label>
+                            <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                                   name="{{ field.html_name }}" 
+                                   id="{{ field.id_for_label }}"
+                                   value="{{ field.value|default_if_none:'' }}" 
+                                   class="form-control form-control-custom">
                         </div>
                     {% endfor %}
 
-                    <button type="submit" name="update_profile" class="btn btn-success w-100 rounded-3 mt-3 shadow-sm">
-                        Сохранить профиль
+                    <button type="submit" name="update_profile" class="btn btn-save-primary w-100 mt-3 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-file-earmark-check"></i> Сохранить профиль
                     </button>
                 </form>
             </div>
         </div>
 
+        <!-- Правая форма: Смена пароля -->
         <div class="col-md-6">
-            <div class="card shadow border-0 rounded-4 p-4 h-100">
-                <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-shield-lock me-2"></i>Смена пароля</h5>
+            <div class="card bento-card border-0 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3.5 d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-lock text-muted"></i> Безопасность
+                </h5>
                 <form method="post" novalidate>
                     {% csrf_token %}
                     
+                    <!-- Поля формы смены пароля -->
                     {% for field in password_form %}
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold text-secondary mb-1">{{ field.label }}</label>
-                            <input type="password" name="{{ field.html_name }}" class="form-control rounded-3 fs-6" required>
+                            <label for="{{ field.id_for_label }}" class="form-label small fw-medium text-secondary mb-1">
+                                {{ field.label }}
+                            </label>
+                            <input type="password" 
+                                   name="{{ field.html_name }}" 
+                                   id="{{ field.id_for_label }}"
+                                   class="form-control form-control-custom" 
+                                   required>
+                            
                             {% if field.help_text %}
-                                <div class="text-muted mt-1" style="font-size: 0.7rem; line-height: 1.2;">{{ field.help_text|safe }}</div>
+                                <div class="help-text-custom">
+                                    {{ field.help_text|safe }}
+                                </div>
                             {% endif %}
                         </div>
                     {% endfor %}
 
-                    <button type="submit" name="change_password" class="btn btn-danger w-100 rounded-3 mt-2 shadow-sm">
-                        Обновить пароль
+                    <button type="submit" name="change_password" class="btn btn-save-danger w-100 mt-3 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-key"></i> Обновить пароль
                     </button>
                 </form>
             </div>

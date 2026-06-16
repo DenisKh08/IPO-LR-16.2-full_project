@@ -4,79 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход в систему - DigitalShop</title>
+    <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://jsdelivr.net">
+    <!-- Google Fonts: Inter для премиального цифрового стиля -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    
     <style>
+        :root {
+            --primary-color: #4f46e5;       /* Трендовый индиго вместо дефолтного синего */
+            --primary-hover: #4338ca;
+            --bg-gradient: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            --dark-card: #0f172a;
+        }
+
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            color: #334155;
         }
-        .card.shadow {
+
+        /* Современная минималистичная панель навигации */
+        .navbar-custom {
+            background-color: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand-custom {
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            font-size: 1.25rem;
+        }
+
+        /* Карточка в стиле софт-минимализма */
+        .auth-card {
             background: #ffffff;
-            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 24px !important; /* Более мягкие скругления */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Красивый интерактив для полей ввода */
+        .form-control-custom {
+            border: 1.5px solid #cbd5e1;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            border-radius: 12px !important;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            background-color: #fff;
+        }
+
+        /* Кастомная кнопка */
+        .btn-primary-custom {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 12px !important;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-primary-custom:active {
+            transform: translateY(0);
+        }
+
+        /* Иконка замка с мягким цветным бэкграундом */
+        .icon-box {
+            width: 64px;
+            height: 64px;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+
+        /* Ссылка регистрации */
+        .reg-link {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .reg-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            transform: scaleX(0);
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: var(--primary-color);
+            transform-origin: bottom right;
+            transition: transform 0.25s ease-out;
+        }
+
+        .reg-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        footer {
+            background-color: #0f172a;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-5">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'catalog:main' %}">
-                <i class="bi bi-laptop me-2"></i> DigitalShop
+            <a class="navbar-brand navbar-brand-custom text-white d-flex align-items-center" href="{% url 'catalog:main' %}">
+                <i class="bi bi-laptop me-2 text-info"></i> DigitalShop
             </a>
-            <a href="{% url 'catalog:main' %}" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-house-door-fill"></i> На главную
+            <a href="{% url 'catalog:main' %}" class="btn btn-link text-white-50 text-decoration-none btn-sm d-flex align-items-center gap-1 transition">
+                <i class="bi bi-house-door"></i> На главную
             </a>
         </div>
     </nav>
 
+    <!-- Основной контент -->
     <div class="container my-auto">
         <div class="row justify-content-center">
-            <div class="col-md-5">
-                <div class="card shadow border-0 rounded-4">
-                    <div class="card-body p-5">
+            <div class="col-xl-4 col-lg-5 col-md-7">
+                <div class="card auth-card border-0">
+                    <div class="card-body p-4 p-sm-5">
                         
+                        <!-- Заголовок формы -->
                         <div class="text-center mb-4">
-                            <div class="display-4 text-primary mb-2">
-                                <i class="bi bi-shield-lock-fill"></i>
+                            <div class="icon-box mb-3">
+                                <i class="bi bi-shield-lock"></i>
                             </div>
-                            <h2 class="fw-bold text-dark">Авторизация</h2>
-                            <p class="text-muted small">Добро пожаловать! Войте в свой аккаунт</p>
+                            <h3 class="fw-bold text-dark tracking-tight mb-1">Авторизация</h3>
+                            <p class="text-muted small">Добро пожаловать! Войдите в свой аккаунт</p>
                         </div>
 
+                        <!-- Ошибки -->
                         {% if form.errors %}
-                            <div class="alert alert-danger alert-dismissible fade show rounded-3 small" role="alert">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i> Неверный логин или пароль.
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 small d-flex align-items-center" role="alert" style="background-color: #fef2f2; color: #991b1b;">
+                                <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i> 
+                                <div>Неверный логин или пароль.</div>
+                                <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close" style="font-size: 0.75rem;"></button>
                             </div>
                         {% endif %}
 
+                        <!-- Форма -->
                         <form method="post" novalidate>
                             {% csrf_token %}
                             
                             {% for field in form %}
                                 <div class="mb-3">
-                                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold small text-secondary">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-secondary mb-1">
                                         {{ field.label }}
                                     </label>
                                     <input type="{{ field.field.widget.input_type|default:'text' }}" 
                                            name="{{ field.html_name }}" 
                                            id="{{ field.id_for_label }}" 
-                                           class="form-control form-control-lg rounded-3 fs-6 {% if form.errors %}is-invalid{% endif %}" 
+                                           class="form-control form-control-custom {% if form.errors %}is-invalid{% endif %}" 
                                            placeholder="Введите {{ field.label|lower }}"
                                            required>
                                 </div>
                             {% endfor %}
 
-                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-3 mt-4 shadow-sm">
-                                <i class="bi bi-box-arrow-in-right me-2"></i> Войти в аккаунт
+                            <!-- Кнопка отправки -->
+                            <button type="submit" class="btn btn-primary-custom btn-lg w-100 mt-4 d-flex align-items-center justify-content-center gap-2">
+                                Войти в аккаунт <i class="bi bi-arrow-right-short fs-5"></i>
                             </button>
                         </form>
 
-                        <div class="text-center mt-4">
+                        <!-- Ссылка на регистрацию -->
+                        <div class="text-center mt-4 pt-2">
                             <p class="mb-0 text-muted small">Ещё нет аккаунта? 
-                                <a href="{% url 'catalog:register' %}" class="text-primary fw-bold text-decoration-none">Зарегистрироваться</a>
+                                <a href="{% url 'catalog:register' %}" class="reg-link">Зарегистрироваться</a>
                             </p>
                         </div>
                     </div>
@@ -85,12 +206,14 @@
         </div>
     </div>
 
-    <footer class="bg-dark text-white-50 text-center py-3 mt-5">
+    <!-- Футер -->
+    <footer class="text-white-50 text-center py-4 mt-5">
         <div class="container small">
             &copy; 2026 DigitalShop. Все права защищены.
         </div>
     </footer>
 
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
