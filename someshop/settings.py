@@ -28,7 +28,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['ipo-lr-162-fullproject-production.up.railway.app', 'localhost', '127.0.0.1']
+
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.up.railway.app',     
